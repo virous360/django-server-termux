@@ -5,12 +5,17 @@ use termux on your phone to run a django server with custom url.
 NOTES :
 does not require root
 does not use a virtual machine inside termux
+does not require a domain
+does not require payment
 
 ## Overall steps
 
 0. settings up your phone ip as static.
 1. setup your ssh to connect from your laptop for easy copy paste (optional).
 2. Get termux to run on phone boot (optional).
+3. installing django
+4. setting up network permitios
+5. installing local tunnel for outside lan connection
 
 ## step 0
 
@@ -80,3 +85,90 @@ copy your ip to use it later ex: 192.168.1.105
     ``` shell
     wget -O 1-runsshd.sh https://raw.githubusercontent.com/virous360/minecraft-server-termux/main/1-runsshd.sh 
     ```
+
+6. setup server start on boot for later (change testsite to the folder name and my website to your website subdomain you choose):
+
+    ``` shell
+    wget -O 2-rundjango.sh  https://raw.githubusercontent.com/virous360/django-server-termux/main/run-django.sh
+    ```
+
+## Step 3
+
+1. create a folder to host your server in (change testsite to whatever you want) :
+
+    ```shell
+    cd ~
+    mkdir django-server
+    cd django-server/
+    apt-get update && apt-get -y upgrade
+    apt-get install python3
+    django-admin startproject testsite
+    cd testsite/
+    cd testsite/
+    ```
+
+### info
+
+Let’s go over what each of these files are:
+
+1. \__init__.py acts as the entry point for your Python project.
+2. settings.py describes the configuration of your Django installation and lets Django know which settings are available.
+3. urls.py contains a urlpatterns list, that routes and maps URLs to their views.
+4. wsgi.py contains the configuration for the Web Server Gateway Interface. The Web Server Gateway Interface (WSGI) is the Python platform standard for the deployment of web servers and applications.
+
+## step 4
+
+1. modify the settings file
+
+    ``` shell
+    nano settings.py
+    ```
+
+2. change ALLOWED_HOSTS to look like this (replacing mywebsite with your custom subdomain)
+
+    ``` shell
+    ALLOWED_HOSTS = ['mywebsite.loca.lt', 'localhost']
+    ```
+
+3. press ctrl-s ctrl-x to exit nano then do this (replacing testsite to the folder name and my website to your website subdomain)
+
+    ``` shell
+    cd ~
+    wget -O run-django.sh https://raw.githubusercontent.com/virous360/django-server-termux/main/run-django.sh
+    chmod +x run-django.sh
+    ```
+
+## step 5
+
+1. install localtunnel
+
+    ``` shell
+    pkg install nodejs -y
+    npm install -g localtunnel
+    cd /data/data/com.termux/files/usr/lib/node_modules/localtunnel/node_modules/openurl/
+    nano openurl.js
+    ```
+
+2. change the file by adding this under linux :
+
+    ```shell
+    ...
+    case 'linux':
+        command = 'xdg-open';
+        break;
+    case 'android':
+        command = 'termux';
+        break;
+    default:
+    ...
+    ```
+
+3. press ctrl-s ctrl-x then cd ~
+
+## done
+
+you can now start your server using :
+
+``` shell
+./run-django.sh
+```
